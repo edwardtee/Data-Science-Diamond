@@ -1,0 +1,108 @@
+
+def rmse(y_true, y_pred):
+    return np.sqrt(mean_squared_error(y_true, y_pred))
+
+def tune_parameter_table(param_name, param_values, base_model, X_train, y_train):
+    scoring = {
+        'r2': 'r2',
+        'mae': make_scorer(mean_absolute_error, greater_is_better=False),
+        'rmse': make_scorer(rmse, greater_is_better=False)
+    }
+
+    grid = GridSearchCV(
+        estimator=base_model,
+        param_grid={param_name: param_values},
+        scoring=scoring,
+        refit='r2',
+        cv=5,
+        n_jobs=-1,
+        return_train_score=False
+    )
+
+    grid.fit(X_train, y_train)
+
+    results = pd.DataFrame(grid.cv_results_)
+
+    summary = pd.DataFrame({
+        param_name: results[f'param_{param_name}'].astype(str),
+        'R²': results['mean_test_r2'],
+        'MAE': -results['mean_test_mae'],
+        'RMSE': -results['mean_test_rmse'],
+        'Execution Time (s)': results['mean_fit_time'] + results['mean_score_time']
+    })
+
+    summary = summary.sort_values(by='R²', ascending=False).reset_index(drop=True)
+
+    return summary, grid.best_params_[param_name], grid.best_score_
+
+model = ExtraTreesRegressor(random_state=42)
+
+n_summary, best_n, best_r2 = tune_parameter_table(
+    "n_estimators",
+    [50,100,200,300,400,500],
+    model,
+    X_train_scaled,
+    y_train
+)
+
+print(n_summary)
+print("Best n_estimators:", best_n)
+print("Best R²:", best_r2)
+
+
+model = ExtraTreesRegressor(
+    random_state=42,
+    n_estimators=best_n
+)
+best_depth = tune_parameter(
+    "max_depth",
+    [None,10,20,30,40,50,60,70],
+    model,
+    X_train_scaled,
+    y_train
+)
+
+model = ExtraTreesRegressor(
+    random_state=42,
+    n_estimators=best_n,
+    max_depth=best_depth
+)
+
+best_split = tune_parameter(
+    "min_samples_split",
+    [2,5,10,20,30,40,50,60,70,80,90,100],
+    model,
+    X_train_scaled,
+    y_train
+)
+
+model = ExtraTreesRegressor(
+    random_state=42,
+    n_estimators=best_n,
+    max_depth=best_depth,
+    min_samples_split=best_split
+)
+
+best_leaf = tune_parameter(
+    "min_samples_leaf",
+    [1,2,4,6,8,10],
+    model,
+    X_train_scaled,
+    y_train
+)
+
+model = ExtraTreesRegressor(
+    random_state=42,
+    n_estimators=best_n,
+    max_depth=best_depth,
+    min_samples_split=best_split,
+    min_samples_leaf=best_leaf
+)
+
+best_feature = tune_parameter(
+    "max_features",
+    [1.0,0.7,0.5,'sqrt','log2'],
+    model,
+    X_train_scaled,
+    y_train
+)
