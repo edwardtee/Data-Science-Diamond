@@ -89,7 +89,7 @@ start_pred = time.perf_counter()
 y_pred = extra_model.predict(X_test_scaled)
 end_pred = time.perf_counter()
 prediction_time = end_pred - start_pred
-
+'''
 # Print Evaluation Metrics
 r2 = r2_score(y_test, y_pred)
 
@@ -100,7 +100,7 @@ rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 print("R² :", r2)
 print("MAE :", mae)
 print("RMSE:", rmse)
-print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")
+print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")'''
 
 '''
 # Save for UI 
