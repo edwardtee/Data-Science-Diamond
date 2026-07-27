@@ -73,6 +73,7 @@ X_train_scaled = scaler.fit_transform(X_train)
 # Transform test data using the same scaler
 X_test_scaled = scaler.transform(X_test)
 
+# --- Train ExtraTreesRegressor Model --- 
 extra_model = ExtraTreesRegressor(
     random_state=42
 )
@@ -88,7 +89,8 @@ start_pred = time.perf_counter()
 y_pred = extra_model.predict(X_test_scaled)
 end_pred = time.perf_counter()
 prediction_time = end_pred - start_pred
-'''
+
+# Print Evaluation Metrics
 r2 = r2_score(y_test, y_pred)
 
 mae = mean_absolute_error(y_test, y_pred)
@@ -98,9 +100,10 @@ rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 print("R² :", r2)
 print("MAE :", mae)
 print("RMSE:", rmse)
-print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")'''
+print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")
 
 '''
+# Save for UI 
 # Save trained model
 joblib.dump(extra_model, "ExtraTreeR_model.pkl")
 
@@ -108,7 +111,8 @@ joblib.dump(extra_model, "ExtraTreeR_model.pkl")
 joblib.dump(scaler, "scaler.pkl")
 
 print("Model Saved Successfully!")'''
-
+'''
+# Parameter Tuning for ExtraTreesRegressor
 from sklearn.metrics import make_scorer, mean_absolute_error, mean_squared_error
 
 def rmse(y_true, y_pred):
@@ -159,4 +163,4 @@ n_summary, best_n, best_r2 = tune_parameter_table(
 
 print(n_summary)
 print("Best max_depth:", best_n)
-print("Best R²:", best_r2)
+print("Best R²:", best_r2)'''
