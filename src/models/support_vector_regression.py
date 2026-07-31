@@ -18,8 +18,8 @@ X_train, X_test, y_train, y_test = load_split()
 FINAL_PARAMS = {
     "kernel": "rbf",
     "C": 20000,
-    "epsilon": 5,
-    "gamma": 2
+    "epsilon": 5.0,
+    "gamma": 2.0
 }
 
 final_model = SVR(**FINAL_PARAMS)
