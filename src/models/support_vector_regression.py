@@ -2,6 +2,7 @@ import sys
 import time
 from pathlib import Path
 
+import joblib
 from sklearn.metrics import mean_absolute_error, r2_score, root_mean_squared_error
 from sklearn.svm import SVR
 
@@ -33,3 +34,9 @@ print("Fit time:", round(fit_time, 6), "s")
 print("R2:  ", round(r2_score(y_test, pred), 6))
 print("MAE: ", round(mean_absolute_error(y_test, pred), 6))
 print("RMSE:", round(root_mean_squared_error(y_test, pred), 6))
+
+MODEL_DIR = root_dir / "src" / "saved_models"
+MODEL_DIR.mkdir(parents=True, exist_ok=True)
+model_path = MODEL_DIR / "svr_model.joblib"
+joblib.dump(final_model, model_path)
+print(f"Saved model to {model_path}")
