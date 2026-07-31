@@ -75,7 +75,12 @@ X_test_scaled = scaler.transform(X_test)
 
 # --- Train ExtraTreesRegressor Model --- 
 extra_model = ExtraTreesRegressor(
-    random_state=42
+    random_state=42,
+    n_estimators=400,
+    max_depth=10,
+    min_samples_split=40,
+    min_samples_leaf=2,
+    max_features=1.0
 )
 
 # --- Measure Training Time ---
@@ -89,7 +94,7 @@ start_pred = time.perf_counter()
 y_pred = extra_model.predict(X_test_scaled)
 end_pred = time.perf_counter()
 prediction_time = end_pred - start_pred
-'''
+
 # Print Evaluation Metrics
 r2 = r2_score(y_test, y_pred)
 
@@ -100,7 +105,7 @@ rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 print("R² :", r2)
 print("MAE :", mae)
 print("RMSE:", rmse)
-print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")'''
+print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")
 
 '''
 # Save for UI 
@@ -164,3 +169,21 @@ n_summary, best_n, best_r2 = tune_parameter_table(
 print(n_summary)
 print("Best max_depth:", best_n)
 print("Best R²:", best_r2)'''
+
+# --- Actual vs Predicted Plot with R² reference line ---
+plt.figure(figsize=(8, 8))
+
+plt.scatter(y_test, y_pred, alpha=0.4, s=15, color="royalblue", label="Predicted vs Actual")
+
+# Perfect prediction line (y = x)
+min_val = min(y_test.min(), y_pred.min())
+max_val = max(y_test.max(), y_pred.max())
+plt.plot([min_val, max_val], [min_val, max_val], color="red", linestyle="--", linewidth=2, label="Perfect Prediction (y = x)")
+
+plt.xlabel("Actual Price")
+plt.ylabel("Predicted Price")
+plt.title(f"Actual vs Predicted Price")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig("FullFeature_actual_vs_predicted.png", dpi=300)

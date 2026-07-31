@@ -121,4 +121,4 @@ try:
 except Exception as e:
     st.error(f"Prediction failed: {e}")
 
-#py -m streamlit run UI.py
+#py -m streamlit run app.py
