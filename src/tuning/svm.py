@@ -1,31 +1,3 @@
-"""
-SVR Parameter Tuning - full sweep with CSV + graph output per parameter
--------------------------------------------------------------------------
-Matches the tuning presentation style used in Section 5.1.3 of the report
-(e.g. Figure 5.1.3.1 "n_estimators Tuning: R2 and Mean Fit Time"):
-for each parameter, produces a CSV table AND a line graph with R2 on the
-left axis and fit time on the right axis.
-
-FULL-DATASET VERSION:
-Every single fit in every sweep below is trained on the FULL training set
-produced by the 80:20 split (random_state=42) - the exact same training
-set used for Extra Trees and Linear Regression. There is no subsampling.
-
-WARNING: SVR training time scales roughly O(n^2)-O(n^3) with training set
-size. Each individual fit on the full ~39k-row training set can take
-90-100+ seconds. With ~38 total fits across all four sweeps (kernel, C,
-epsilon, gamma), expect this script to take roughly 45-70+ minutes to
-run start to finish. This is expected and is a real, reportable
-limitation of SVR at this dataset size (see Section 6.3 Limitations).
-
-Outputs (all saved in current directory):
-  kernel_results.csv   + kernel_tuning.png
-  C_results.csv        + C_tuning.png
-  epsilon_results.csv  + epsilon_tuning.png
-  gamma_results.csv    + gamma_tuning.png
-  final_model_summary.csv
-"""
-
 import time
 import pandas as pd
 import numpy as np
@@ -38,7 +10,7 @@ from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 # ---------------------------------------------------------------------
 # 0. CONFIG
 # ---------------------------------------------------------------------
-DATA_PATH = "Diamonds Prices2022.csv"     # <-- update to your dataset path
+DATA_PATH = "Diamonds Prices2022.csv"     
 
 # ---------------------------------------------------------------------
 # 1. Preprocessing (identical to the rest of the group's pipeline)
@@ -63,9 +35,6 @@ FEATURES = ["carat", "x", "y", "z"]
 X = df_clean[FEATURES]
 y = df_clean["price"]
 
-# Same 80:20 split, same random_state=42 as the rest of the group's models
-# (Extra Trees, Linear Regression) -> test set is identical across all models,
-# so R2/MAE/RMSE comparisons in Section 6.0 are apples-to-apples.
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, shuffle=True
 )
@@ -216,9 +185,7 @@ BEST_GAMMA = best_gamma_row["gamma"]
 print(f">> Best gamma by this scan: {BEST_GAMMA} (R2={best_gamma_row['R2']:.4f})\n")
 
 # ---------------------------------------------------------------------
-# 6. FINAL MODEL - build with the best value found for each parameter.
-#    (Already trained on the full training set throughout, so this is
-#    really just re-confirming/printing the winning combination cleanly.)
+# 6. FINAL MODEL 
 # ---------------------------------------------------------------------
 print("=" * 70)
 print("FINAL CHOSEN PARAMETERS (best value found per sweep):")
@@ -252,92 +219,3 @@ summary_df = pd.DataFrame([{
 summary_df.to_csv("final_model_summary.csv", index=False)
 print("\nSaved final model summary -> final_model_summary.csv")
 print("All sweeps complete. CSVs and PNGs saved in current directory.")
-
-"""
-Split check: 80:20, random_state=42 (matches Extra Trees / Linear Regression)
-Full training set: 39120 rows (80.0%)
-Full test set     : 9781 rows (20.0%)
-Every fit below uses the FULL training set above (no subsampling).
-
---- Kernel sweep (C=1.0, epsilon=0.1, gamma='scale') ---
-kernel=linear  : R2=0.7840  MAE=  843.62  RMSE= 1584.44  fit_time=24.18s
-kernel=rbf     : R2=0.6921  MAE=  913.02  RMSE= 1892.01  fit_time=27.39s
-kernel=poly    : R2=0.7006  MAE= 1222.65  RMSE= 1865.76  fit_time=44.57s
-kernel=sigmoid : R2=0.2826  MAE= 1689.89  RMSE= 2887.78  fit_time=40.94s
-Saved graph -> kernel_tuning.png
->> Best kernel by this scan: linear (R2=0.7840)
->> CAUTION: this scan used un-tuned C=1.0/gamma='scale' for every kernel.
->> rbf looks weak here only because it hasn't been tuned yet - the C/gamma
->> sweeps below tune rbf properly and it ends up beating this 'best' kernel.
->> Proceeding with kernel='rbf' for the C/epsilon/gamma sweeps since it is the
->> standard choice for capturing non-linear feature-price relationships.
-
-
---- C sweep (kernel=rbf, epsilon=0.1, gamma='scale') ---
-C=    0.1: R2=0.2257  MAE= 1605.40  RMSE= 3000.26  fit_time=30.80s
-C=      1: R2=0.6921  MAE=  913.02  RMSE= 1892.01  fit_time=26.52s
-C=      5: R2=0.8134  MAE=  764.13  RMSE= 1472.70  fit_time=26.50s
-C=     10: R2=0.8313  MAE=  740.78  RMSE= 1400.52  fit_time=26.15s
-C=     50: R2=0.8453  MAE=  720.00  RMSE= 1340.90  fit_time=27.19s
-C=    100: R2=0.8474  MAE=  715.39  RMSE= 1331.91  fit_time=25.99s
-C=    500: R2=0.8505  MAE=  709.00  RMSE= 1318.27  fit_time=25.87s
-C=   1000: R2=0.8513  MAE=  707.07  RMSE= 1314.60  fit_time=26.85s
-C=   5000: R2=0.8532  MAE=  703.12  RMSE= 1306.36  fit_time=28.23s
-C=  10000: R2=0.8533  MAE=  702.48  RMSE= 1305.87  fit_time=30.60s
-C=  20000: R2=0.8535  MAE=  702.04  RMSE= 1304.91  fit_time=32.84s
-Saved graph -> C_tuning.png
->> Best C by this scan: 20000.0 (R2=0.8535)
-
-
---- epsilon sweep (kernel=rbf, C=20000.0, gamma='scale') ---
-epsilon= 0.001: R2=0.8535  MAE=  702.04  RMSE= 1304.91  fit_time=32.88s
-epsilon=  0.01: R2=0.8535  MAE=  702.04  RMSE= 1304.91  fit_time=33.18s
-epsilon=  0.05: R2=0.8535  MAE=  702.04  RMSE= 1304.91  fit_time=32.12s
-epsilon=   0.1: R2=0.8535  MAE=  702.04  RMSE= 1304.91  fit_time=32.87s
-epsilon=   0.2: R2=0.8535  MAE=  702.04  RMSE= 1304.91  fit_time=31.89s
-epsilon=   0.5: R2=0.8535  MAE=  702.04  RMSE= 1304.89  fit_time=33.03s
-epsilon=     1: R2=0.8535  MAE=  702.04  RMSE= 1304.91  fit_time=31.91s
-epsilon=     2: R2=0.8535  MAE=  702.03  RMSE= 1304.88  fit_time=31.94s
-epsilon=     5: R2=0.8535  MAE=  702.03  RMSE= 1304.83  fit_time=32.24s
-Saved graph -> epsilon_tuning.png
->> Best epsilon by this scan: 5.0 (R2=0.8535)
->> Note: R2 is likely to be near-flat across epsilon values at this price scale -
->> if so, treat this as a null result rather than a strong finding in your report.
-
-
---- gamma sweep (kernel=rbf, C=20000.0, epsilon=5.0) ---
-gamma= 0.001: R2=0.8441  MAE=  726.81  RMSE= 1346.21  fit_time=27.40s
-gamma=  0.01: R2=0.8496  MAE=  716.57  RMSE= 1322.34  fit_time=27.43s
-gamma=  0.05: R2=0.8510  MAE=  713.59  RMSE= 1316.26  fit_time=31.75s
-gamma=   0.1: R2=0.8518  MAE=  708.92  RMSE= 1312.38  fit_time=33.29s
-gamma=   0.5: R2=0.8544  MAE=  700.09  RMSE= 1300.94  fit_time=34.47s
-gamma=     1: R2=0.8552  MAE=  696.71  RMSE= 1297.50  fit_time=34.28s
-gamma=   1.5: R2=0.8558  MAE=  694.76  RMSE= 1294.56  fit_time=36.26s
-gamma=     2: R2=0.8562  MAE=  693.55  RMSE= 1293.13  fit_time=39.47s
-gamma=     3: R2=0.8559  MAE=  693.86  RMSE= 1294.08  fit_time=45.50s
-gamma=     5: R2=0.8555  MAE=  693.97  RMSE= 1296.26  fit_time=57.52s
-gamma=     8: R2=0.8547  MAE=  694.92  RMSE= 1299.81  fit_time=66.82s
-gamma=    10: R2=0.8540  MAE=  696.05  RMSE= 1302.59  fit_time=73.93s
-gamma=scale : R2=0.8535  MAE=  702.03  RMSE= 1304.83  fit_time=32.03s
-gamma=auto  : R2=0.8535  MAE=  702.03  RMSE= 1304.83  fit_time=31.38s
-Saved graph -> gamma_tuning.png
->> Best gamma by this scan: 2.0 (R2=0.8562)
-
-======================================================================
-FINAL CHOSEN PARAMETERS (best value found per sweep):
-  kernel  = rbf   (see caution note above about the kernel scan)
-  C       = 20000.0
-  epsilon = 5.0
-  gamma   = 2.0
-======================================================================
-
-FINAL MODEL RESULTS (trained on full 39120-row training set,
-evaluated on the same 9781-row 80:20 test split, random_state=42):
-  R^2         : 0.8562
-  MAE         : 693.55
-  RMSE        : 1293.13
-  Fit Time (s): 39.61
-
-Saved final model summary -> final_model_summary.csv
-All sweeps complete. CSVs and PNGs saved in current directory.
-"""
