@@ -22,20 +22,21 @@ st.title("💎 Diamond Price Prediction System")
 
 st.write(
     """
-    Enter the diamond characteristics below.
-    The trained Extra Trees Regressor will estimate the diamond price.
+    Move the sliders below to describe the diamond's characteristics.
+    The trained Extra Trees Regressor will update its price estimate live
+    as you adjust the values — no button needed.
     """
 )
 
-# Training ranges — used both for display and for server-side validation
-CARAT_MIN, CARAT_MAX = 0.10, 10.00
-X_MIN, X_MAX = 0.00, 20.00
-Y_MIN, Y_MAX = 0.00, 20.00
-Z_MIN, Z_MAX = 0.00, 20.00
+# Training ranges — used both for slider bounds and for display
+CARAT_MIN, CARAT_MAX = 0.20, 2.00
+X_MIN, X_MAX = 3.70, 8.30
+Y_MIN, Y_MAX = 3.68, 8.30
+Z_MIN, Z_MAX = 1.40, 5.30
 
 with st.expander("Valid Input Range"):
     st.write(f"""
-    Please enter values within the range used to train the model.
+    Sliders are already constrained to the range used to train the model.
 
     - Carat: **{CARAT_MIN} – {CARAT_MAX}**
     - Length (x): **{X_MIN} – {X_MAX} mm**
@@ -44,103 +45,80 @@ with st.expander("Valid Input Range"):
     """)
 
 # ----------------------------
-# User Inputs (inside a form)
+# User Inputs (sliders)
 # ----------------------------
-# Using st.form means none of the widgets below trigger a rerun or update
-# their values in session_state until the user clicks the submit button.
-# That closes the gap where a half-typed / out-of-range value (e.g. "-5"
-# still showing in the box) could be used by the script before it's been
-# corrected or committed.
-with st.form("prediction_form"):
+# st.slider enforces min/max by construction, so there's no way to enter an
+# out-of-range value the way a text/number box would allow mid-typing.
+# Because these live outside any st.form, moving any slider triggers an
+# immediate rerun — which is what gives us the "live" prediction below.
+carat = st.slider(
+    "Carat",
+    min_value=CARAT_MIN,
+    max_value=CARAT_MAX,
+    value=1.00,
+    step=0.01
+)
 
-    carat = st.number_input(
-        "Carat",
-        min_value=CARAT_MIN,
-        max_value=CARAT_MAX,
-        value=1.00,
-        step=0.01
-    )
+x = st.slider(
+    "Length (x) mm",
+    min_value=X_MIN,
+    max_value=X_MAX,
+    value=5.50,
+    step=0.01
+)
 
-    x = st.number_input(
-        "Length (x)",
-        min_value=X_MIN,
-        max_value=X_MAX,
-        value=5.50,
-        step=0.01
-    )
+y = st.slider(
+    "Width (y) mm",
+    min_value=Y_MIN,
+    max_value=Y_MAX,
+    value=5.50,
+    step=0.01
+)
 
-    y = st.number_input(
-        "Width (y)",
-        min_value=Y_MIN,
-        max_value=Y_MAX,
-        value=5.50,
-        step=0.01
-    )
-
-    z = st.number_input(
-        "Depth (z)",
-        min_value=Z_MIN,
-        max_value=Z_MAX,
-        value=3.50,
-        step=0.01
-    )
-
-    submitted = st.form_submit_button("Predict Price")
+z = st.slider(
+    "Depth (z) mm",
+    min_value=Z_MIN,
+    max_value=Z_MAX,
+    value=3.50,
+    step=0.01
+)
 
 # ----------------------------
-# Prediction
+# Logical (cross-field) checks
 # ----------------------------
-if submitted:
+# These aren't hard range limits, so a slider can't prevent them — but since
+# there's no submit button to gate on anymore, we surface them as warnings
+# rather than stopping execution, so the live prediction still updates.
+warnings = []
 
-    error_message = []
+if z > x:
+    warnings.append("Depth (z) is currently greater than Length (x) — that's unusual for a real diamond.")
 
-    # Explicit server-side range validation.
-    # Even with min_value/max_value set above, Streamlit's widget bounds are
-    # only a UI hint — they narrow what you *can* select, but don't replace
-    # a real server-side check. We re-validate here as the source of truth.
-    if not (CARAT_MIN <= carat <= CARAT_MAX):
-        error_message.append(f"Carat must be between {CARAT_MIN} and {CARAT_MAX}.")
+if z > y:
+    warnings.append("Depth (z) is currently greater than Width (y) — that's unusual for a real diamond.")
 
-    if not (X_MIN <= x <= X_MAX):
-        error_message.append(f"Length (x) must be between {X_MIN} and {X_MAX} mm.")
+for msg in warnings:
+    st.warning(msg)
 
-    if not (Y_MIN <= y <= Y_MAX):
-        error_message.append(f"Width (y) must be between {Y_MIN} and {Y_MAX} mm.")
+# ----------------------------
+# Live Prediction
+# ----------------------------
+input_data = pd.DataFrame({
+    "carat": [carat],
+    "x": [x],
+    "y": [y],
+    "z": [z]
+})
 
-    if not (Z_MIN <= z <= Z_MAX):
-        error_message.append(f"Depth (z) must be between {Z_MIN} and {Z_MAX} mm.")
+try:
+    input_scaled = scaler.transform(input_data)
+    prediction = model.predict(input_scaled)
 
-    # Logical checks
-    if z > x:
-        error_message.append("Depth (z) cannot be greater than Length (x).")
+    price = prediction[0]
 
-    if z > y:
-        error_message.append("Depth (z) cannot be greater than Width (y).")
+    st.success(f"Estimated Diamond Price: ${price:,.2f}")
 
-    if error_message:
-        for msg in error_message:
-            st.error(msg)
-        st.stop()
-
-    # Prediction
-    input_data = pd.DataFrame({
-        "carat": [carat],
-        "x": [x],
-        "y": [y],
-        "z": [z]
-    })
-
-    try:
-        input_scaled = scaler.transform(input_data)
-        prediction = model.predict(input_scaled)
-
-        price = prediction[0]
-
-        st.success(f"Estimated Diamond Price: ${price:,.2f}")
-
-        st.balloons()
-
-    except Exception as e:
-        st.error(f"Prediction failed: {e}")
+except Exception as e:
+    st.error(f"Prediction failed: {e}")
 
 #py -m streamlit run UI.py

@@ -3,10 +3,14 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, r2_score, mean_absolute_error, mean_squared_error
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.ensemble import StackingRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
 import joblib
 import seaborn as sns
 import time
@@ -74,22 +78,47 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # --- Train ExtraTreesRegressor Model --- 
-extra_model = ExtraTreesRegressor(
-    random_state=42
+base_models = [
+    ("etr", ExtraTreesRegressor(
+        n_estimators=400,
+        max_depth=10,
+        min_samples_split=40,
+        min_samples_leaf=2,
+        random_state=42
+    )),
+    ("gbr", GradientBoostingRegressor(
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=5,
+        min_samples_split=64,
+        subsample=1.0,
+        loss='squared_error',
+        random_state=42
+    ))
+]
+
+stack = StackingRegressor(
+    estimators=base_models,
+    final_estimator=LinearRegression(),
+    cv=5,
+    n_jobs=-1
 )
 
+stack.fit(X_train, y_train)
+
+pred = stack.predict(X_test)
 # --- Measure Training Time ---
 start_train = time.perf_counter()
-extra_model.fit(X_train_scaled, y_train)
+stack.fit(X_train, y_train)
 end_train = time.perf_counter()
 training_time = end_train - start_train
 
 # --- Measure Prediction Time ---
 start_pred = time.perf_counter()
-y_pred = extra_model.predict(X_test_scaled)
+y_pred = stack.predict(X_test)
 end_pred = time.perf_counter()
 prediction_time = end_pred - start_pred
-'''
+
 # Print Evaluation Metrics
 r2 = r2_score(y_test, y_pred)
 
@@ -100,7 +129,7 @@ rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 print("R² :", r2)
 print("MAE :", mae)
 print("RMSE:", rmse)
-print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")'''
+print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")
 
 '''
 # Save for UI 
