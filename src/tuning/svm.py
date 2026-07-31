@@ -162,28 +162,3 @@ print(f"  C       = {BEST_C}")
 print(f"  epsilon = {BEST_EPS}")
 print(f"  gamma   = {BEST_GAMMA}")
 print("=" * 70)
-
-final_model = SVR(kernel="rbf", C=BEST_C, epsilon=BEST_EPS, gamma=BEST_GAMMA)
-t0 = time.time()
-final_model.fit(X_train, y_train)
-final_fit_time = time.time() - t0
-final_pred = final_model.predict(X_test)
-
-final_r2 = r2_score(y_test, final_pred)
-final_mae = mean_absolute_error(y_test, final_pred)
-final_rmse = np.sqrt(mean_squared_error(y_test, final_pred))
-
-print(f"\nFINAL MODEL RESULTS (trained on full {X_train.shape[0]}-row training set,")
-print(f"evaluated on the same {X_test.shape[0]}-row 80:20 test split, random_state=42):")
-print(f"  R^2         : {final_r2:.4f}")
-print(f"  MAE         : {final_mae:.2f}")
-print(f"  RMSE        : {final_rmse:.2f}")
-print(f"  Fit Time (s): {final_fit_time:.2f}")
-
-summary_df = pd.DataFrame([{
-    "kernel": "rbf", "C": BEST_C, "epsilon": BEST_EPS, "gamma": BEST_GAMMA,
-    "R2": final_r2, "MAE": final_mae, "RMSE": final_rmse, "fit_time(s)": final_fit_time
-}])
-summary_df.to_csv("final_model_summary.csv", index=False)
-print("\nSaved final model summary -> final_model_summary.csv")
-print("All sweeps complete. CSVs and PNGs saved in current directory.")

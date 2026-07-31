@@ -9,4 +9,3 @@ if str(root_dir) not in sys.path:
 from src.preprocessing.preprocessing import load_split
 
 X_train, X_test, y_train, y_test = load_split()
-
