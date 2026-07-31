@@ -1,53 +1,21 @@
+import sys
 import time
-import pandas as pd
-import numpy as np
+from pathlib import Path
+
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
+import numpy as np
+import pandas as pd
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.svm import SVR
-from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 
-# ---------------------------------------------------------------------
-# 0. CONFIG
-# ---------------------------------------------------------------------
-DATA_PATH = "Diamonds Prices2022.csv"     
+# Navigate up 2 levels from testing.py to find the project root directory
+root_dir = Path(__file__).resolve().parents[2]
+if str(root_dir) not in sys.path:
+    sys.path.append(str(root_dir))
 
-# ---------------------------------------------------------------------
-# 1. Preprocessing (identical to the rest of the group's pipeline)
-# ---------------------------------------------------------------------
-df = pd.read_csv(DATA_PATH)
-df = df.drop(columns=[c for c in df.columns if c.lower().startswith("unnamed")], errors="ignore")
-for col in ["cut", "color", "clarity"]:
-    if col in df.columns:
-        df[col] = LabelEncoder().fit_transform(df[col])
+from src.preprocessing.preprocessing import load_split
 
-def remove_outliers_iqr(data, columns):
-    data = data.copy()
-    for col in columns:
-        q1, q3 = data[col].quantile(0.25), data[col].quantile(0.75)
-        iqr = q3 - q1
-        data = data[(data[col] >= q1 - 1.5 * iqr) & (data[col] <= q3 + 1.5 * iqr)]
-    return data
-
-df_clean = remove_outliers_iqr(df, ["carat", "depth", "table", "x", "y", "z"])
-
-FEATURES = ["carat", "x", "y", "z"]
-X = df_clean[FEATURES]
-y = df_clean["price"]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, shuffle=True
-)
-
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-print("Split check: 80:20, random_state=42 (matches Extra Trees / Linear Regression)")
-print(f"Full training set: {X_train_scaled.shape[0]} rows ({X_train_scaled.shape[0]/len(X):.1%})")
-print(f"Full test set     : {X_test_scaled.shape[0]} rows ({X_test_scaled.shape[0]/len(X):.1%})")
-print("Every fit below uses the FULL training set above (no subsampling).\n")
-
+X_train, X_test, y_train, y_test = load_split()
 
 def evaluate(model, X_tr, y_tr, X_te, y_te):
     t0 = time.time()
@@ -91,7 +59,7 @@ kernels = ["linear", "rbf", "poly", "sigmoid"]
 kernel_rows = []
 for k in kernels:
     model = SVR(kernel=k, C=1.0, epsilon=0.1, gamma="scale")
-    r2, mae, rmse, ft = evaluate(model, X_train_scaled, y_train, X_test_scaled, y_test)
+    r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
     kernel_rows.append((k, r2, mae, rmse, ft))
     print(f"kernel={k:8s}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
@@ -116,7 +84,7 @@ C_values = [0.1, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 20000]
 C_rows = []
 for C in C_values:
     model = SVR(kernel="rbf", C=C, epsilon=0.1, gamma="scale")
-    r2, mae, rmse, ft = evaluate(model, X_train_scaled, y_train, X_test_scaled, y_test)
+    r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
     C_rows.append((C, r2, mae, rmse, ft))
     print(f"C={C:7}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
@@ -137,7 +105,7 @@ eps_values = [0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
 eps_rows = []
 for eps in eps_values:
     model = SVR(kernel="rbf", C=BEST_C, epsilon=eps, gamma="scale")
-    r2, mae, rmse, ft = evaluate(model, X_train_scaled, y_train, X_test_scaled, y_test)
+    r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
     eps_rows.append((eps, r2, mae, rmse, ft))
     print(f"epsilon={eps:6}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
@@ -160,14 +128,14 @@ gamma_values = [0.001, 0.01, 0.05, 0.1, 0.5, 1, 1.5, 2, 3, 5, 8, 10]
 gamma_rows = []
 for g in gamma_values:
     model = SVR(kernel="rbf", C=BEST_C, epsilon=BEST_EPS, gamma=g)
-    r2, mae, rmse, ft = evaluate(model, X_train_scaled, y_train, X_test_scaled, y_test)
+    r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
     gamma_rows.append((g, r2, mae, rmse, ft))
     print(f"gamma={g:6}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
 # also test scale/auto separately since they're not numeric
 for g in ["scale", "auto"]:
     model = SVR(kernel="rbf", C=BEST_C, epsilon=BEST_EPS, gamma=g)
-    r2, mae, rmse, ft = evaluate(model, X_train_scaled, y_train, X_test_scaled, y_test)
+    r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
     gamma_rows.append((g, r2, mae, rmse, ft))
     print(f"gamma={g:6}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
@@ -189,7 +157,7 @@ print(f">> Best gamma by this scan: {BEST_GAMMA} (R2={best_gamma_row['R2']:.4f})
 # ---------------------------------------------------------------------
 print("=" * 70)
 print("FINAL CHOSEN PARAMETERS (best value found per sweep):")
-print(f"  kernel  = rbf   (see caution note above about the kernel scan)")
+print("  kernel  = rbf   (see caution note above about the kernel scan)")
 print(f"  C       = {BEST_C}")
 print(f"  epsilon = {BEST_EPS}")
 print(f"  gamma   = {BEST_GAMMA}")
@@ -197,16 +165,16 @@ print("=" * 70)
 
 final_model = SVR(kernel="rbf", C=BEST_C, epsilon=BEST_EPS, gamma=BEST_GAMMA)
 t0 = time.time()
-final_model.fit(X_train_scaled, y_train)
+final_model.fit(X_train, y_train)
 final_fit_time = time.time() - t0
-final_pred = final_model.predict(X_test_scaled)
+final_pred = final_model.predict(X_test)
 
 final_r2 = r2_score(y_test, final_pred)
 final_mae = mean_absolute_error(y_test, final_pred)
 final_rmse = np.sqrt(mean_squared_error(y_test, final_pred))
 
-print(f"\nFINAL MODEL RESULTS (trained on full {X_train_scaled.shape[0]}-row training set,")
-print(f"evaluated on the same {X_test_scaled.shape[0]}-row 80:20 test split, random_state=42):")
+print(f"\nFINAL MODEL RESULTS (trained on full {X_train.shape[0]}-row training set,")
+print(f"evaluated on the same {X_test.shape[0]}-row 80:20 test split, random_state=42):")
 print(f"  R^2         : {final_r2:.4f}")
 print(f"  MAE         : {final_mae:.2f}")
 print(f"  RMSE        : {final_rmse:.2f}")
