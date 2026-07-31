@@ -50,6 +50,8 @@ def plot_tuning(x_values, r2_values, time_values, xlabel, title, filename, log_x
     plt.close()
     print(f"Saved graph -> {filename}")
 
+OUT_DIR = root_dir / "output" / "support_vector_regression"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------
 # 2. Kernel sweep
@@ -64,9 +66,8 @@ for k in kernels:
     print(f"kernel={k:8s}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
 kernel_df = pd.DataFrame(kernel_rows, columns=["kernel", "R2", "MAE", "RMSE", "fit_time(s)"])
-kernel_df.to_csv("kernel_results.csv", index=False)
-plot_tuning(kernel_df["kernel"], kernel_df["R2"], kernel_df["fit_time(s)"],
-            "Kernel", "Kernel Tuning: R² and Fit Time", "kernel_tuning.png")
+kernel_df.to_csv(OUT_DIR / "svr_kernel.csv", index=False)
+plot_tuning(kernel_df["kernel"], kernel_df["R2"], kernel_df["fit_time(s)"], "Kernel", "Kernel Tuning: R² and Fit Time", OUT_DIR / "svr_kernel.png")
 
 best_kernel_row = kernel_df.loc[kernel_df["R2"].idxmax()]
 print(f">> Best kernel by this scan: {best_kernel_row['kernel']} (R2={best_kernel_row['R2']:.4f})")
@@ -89,9 +90,8 @@ for C in C_values:
     print(f"C={C:7}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
 C_df = pd.DataFrame(C_rows, columns=["C", "R2", "MAE", "RMSE", "fit_time(s)"])
-C_df.to_csv("C_results.csv", index=False)
-plot_tuning(C_df["C"], C_df["R2"], C_df["fit_time(s)"],
-            "C (log scale)", "C Tuning: R² and Fit Time", "C_tuning.png", log_x=True)
+C_df.to_csv(OUT_DIR / "svr_C.csv", index=False)
+plot_tuning(C_df["C"], C_df["R2"], C_df["fit_time(s)"], "C (log scale)", "C Tuning: R² and Fit Time", OUT_DIR / "svr_C.png", log_x=True)
 
 best_C_row = C_df.loc[C_df["R2"].idxmax()]
 BEST_C = best_C_row["C"]
@@ -110,9 +110,8 @@ for eps in eps_values:
     print(f"epsilon={eps:6}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
 eps_df = pd.DataFrame(eps_rows, columns=["epsilon", "R2", "MAE", "RMSE", "fit_time(s)"])
-eps_df.to_csv("epsilon_results.csv", index=False)
-plot_tuning(eps_df["epsilon"], eps_df["R2"], eps_df["fit_time(s)"],
-            "epsilon (log scale)", "epsilon Tuning: R² and Fit Time", "epsilon_tuning.png", log_x=True)
+eps_df.to_csv(OUT_DIR / "svr_epsilon.csv", index=False)
+plot_tuning(eps_df["epsilon"], eps_df["R2"], eps_df["fit_time(s)"], "epsilon (log scale)", "epsilon Tuning: R² and Fit Time", OUT_DIR / "svr_epsilon.png", log_x=True)
 
 best_eps_row = eps_df.loc[eps_df["R2"].idxmax()]
 BEST_EPS = best_eps_row["epsilon"]
@@ -140,13 +139,12 @@ for g in ["scale", "auto"]:
     print(f"gamma={g:6}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
 gamma_df = pd.DataFrame(gamma_rows, columns=["gamma", "R2", "MAE", "RMSE", "fit_time(s)"])
-gamma_df.to_csv("gamma_results.csv", index=False)
+gamma_df.to_csv(OUT_DIR / "svr_gamma.csv", index=False)
 
 # plot only the numeric gamma values (scale/auto shown in CSV/table only)
 gamma_numeric = gamma_df[pd.to_numeric(gamma_df["gamma"], errors="coerce").notna()].copy()
 gamma_numeric["gamma"] = gamma_numeric["gamma"].astype(float)
-plot_tuning(gamma_numeric["gamma"], gamma_numeric["R2"], gamma_numeric["fit_time(s)"],
-            "gamma (log scale)", "gamma Tuning: R² and Fit Time", "gamma_tuning.png", log_x=True)
+plot_tuning(gamma_numeric["gamma"], gamma_numeric["R2"], gamma_numeric["fit_time(s)"], "gamma (log scale)", "gamma Tuning: R² and Fit Time", OUT_DIR / "svr_gamma.png", log_x=True)
 
 best_gamma_row = gamma_numeric.loc[gamma_numeric["R2"].idxmax()]
 BEST_GAMMA = best_gamma_row["gamma"]
