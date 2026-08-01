@@ -1,25 +1,23 @@
-import pandas as pd
-import numpy as np
-import os
 import time
+from pathlib import Path
 
 # For Visualization
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
+from sklearn.linear_model import Lasso, LinearRegression, Ridge
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # For Machine Learning
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-# 1. Load Dataset
-file_path = os.path.join(os.path.dirname(__file__), "Diamonds Prices2022.csv")
-data = pd.read_csv(file_path)
-
-if 'Unnamed: 0' in data.columns:
-    data = data.drop(columns=['Unnamed: 0'])
+# # 1. Load Dataset
+PROJECT_ROOT = Path(__file__).resolve().parents[0]
+RAW_CSV = PROJECT_ROOT / "data" / "Diamonds Prices2022.csv"
+data = pd.read_csv(RAW_CSV)
 
 
 # 2. Data Cleaning & Preprocessing
