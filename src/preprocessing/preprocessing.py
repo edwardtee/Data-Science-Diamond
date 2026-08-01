@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # preprocess.py lives at <project>/src/preprocessing/preprocess.py
 # parents[0]=preprocessing, [1]=src, [2]=<project root>
@@ -52,13 +52,11 @@ def load_full_split():
     df_clean = remove_outliers_iqr(df, OUTLIER_COLS)
     print("Cleaned shape (after outlier removal):", df_clean.shape)
 
-    X = pd.get_dummies(
-        df_clean.drop(columns=["price"]),
-        columns=["cut", "color", "clarity"],
-        dtype=int,
-        drop_first=True,
-    )
-
+    encoder = LabelEncoder()
+    for col in ["cut", "color", "clarity"]:
+        df_clean[col] = encoder.fit_transform(df_clean[col])
+    
+    X = df_clean.drop(columns=["price"])
     y = df_clean[TARGET]
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, shuffle=True
