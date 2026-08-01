@@ -28,7 +28,7 @@ def remove_outliers_iqr(data: pd.DataFrame, cols) -> pd.DataFrame:
 
 def load_test_split():
     df = pd.read_csv(RAW_CSV)
-    df = df.drop(columns='Unnamed: 0')
+    df = df.drop(columns="Unnamed: 0")
     df_clean = remove_outliers_iqr(df, OUTLIER_COLS)
     print("Cleaned shape (after outlier removal):", df_clean.shape)
 
@@ -48,16 +48,17 @@ def load_test_split():
 
 def load_full_split():
     df = pd.read_csv(RAW_CSV)
-    df = df.drop(columns='Unnamed: 0')
+    df = df.drop(columns="Unnamed: 0")
     df_clean = remove_outliers_iqr(df, OUTLIER_COLS)
     print("Cleaned shape (after outlier removal):", df_clean.shape)
-    
+
     X = pd.get_dummies(
         df_clean.drop(columns=["price"]),
         columns=["cut", "color", "clarity"],
         dtype=int,
-        drop_first=True
+        drop_first=True,
     )
+
     y = df_clean[TARGET]
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, shuffle=True
