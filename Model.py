@@ -30,9 +30,9 @@ print(df1.describe())   '''
 df1 = df1.drop(columns='Unnamed: 0')
 #print(df1.isnull().sum())
 
-encoder = LabelEncoder()
+'''encoder = LabelEncoder()
 for col in ["cut","color","clarity"]:
-    df1[col] = encoder.fit_transform(df1[col])
+    df1[col] = encoder.fit_transform(df1[col])'''
 
 '''encoders = {}
 for col in ["cut","color","clarity"]:
@@ -78,9 +78,10 @@ for col in numeric_features:
         (df_clean[col] <= upper)
     ]
 
-X = df_clean.drop(columns=["price"])
-#X = df_clean[important_features].copy()
-y = df_clean["price"]
+df_encoded = pd.get_dummies(df_clean, columns=["cut", "color", "clarity"], drop_first=True)
+# 4. Separate features and target
+X = df_encoded.drop(columns=["price"])
+y = df_encoded["price"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 # Standardize numerical features
