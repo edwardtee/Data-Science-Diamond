@@ -41,7 +41,7 @@ def remove_outliers_iqr(data: pd.DataFrame, cols) -> pd.DataFrame:
     return data
 
 
-def load_split():
+def load_test_split():
     df = pd.read_csv(RAW_CSV)
     df_clean = remove_outliers_iqr(df, OUTLIER_COLS)
     print("Cleaned shape (after outlier removal):", df.shape)
@@ -61,4 +61,4 @@ def load_split():
 
 
 if __name__ == "__main__":
-    load_split()
+    load_test_split()

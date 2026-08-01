@@ -16,9 +16,9 @@ root_dir = Path(__file__).resolve().parents[2]
 if str(root_dir) not in sys.path:
     sys.path.append(str(root_dir))
 
-from src.preprocessing.preprocessing import load_split
+from src.preprocessing.preprocessing import load_test_split
 
-X_train, X_test, y_train, y_test = load_split()
+X_train, X_test, y_train, y_test = load_test_split()
 
 # 1. Evaluation Function
 def evaluate_model(model, X_train, y_train, X_test, y_test, model_name="Model"):
