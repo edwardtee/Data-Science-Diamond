@@ -11,6 +11,7 @@ from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.ensemble import StackingRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
+from sklearn.svm import SVR
 import joblib
 import seaborn as sns
 import time
@@ -94,6 +95,12 @@ base_models = [
         subsample=1.0,
         loss='squared_error',
         random_state=42
+    )),
+    ("svr",SVR(
+        kernel='rbf',
+        C=20000,
+        gamma=2,
+        epsilon=5
     ))
 ]
 
