@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -15,6 +17,7 @@ import os
 
 file_path = os.path.join(
     os.path.dirname(__file__),
+    "data",
     "Diamonds Prices2022.csv"
 )
 
@@ -28,9 +31,17 @@ df1 = df1.drop(columns='Unnamed: 0')
 #print(df1.isnull().sum())
 
 encoder = LabelEncoder()
-
 for col in ["cut","color","clarity"]:
     df1[col] = encoder.fit_transform(df1[col])
+
+'''encoders = {}
+for col in ["cut","color","clarity"]:
+    le = LabelEncoder()
+    df1[col] = le.fit_transform(df1[col])
+    encoders[col] = le
+MODEL_DIR = Path("src") / "saved_models"
+joblib.dump(encoders, MODEL_DIR / "AllFeature_label_encoders.joblib")'''
+    
 
 '''#Generate the Correlation Matrix Image
 plt.figure(figsize=(10,8))
@@ -67,8 +78,8 @@ for col in numeric_features:
         (df_clean[col] <= upper)
     ]
 
-#X = df_clean.drop(columns=["price"])
-X = df_clean[important_features].copy()
+X = df_clean.drop(columns=["price"])
+#X = df_clean[important_features].copy()
 y = df_clean["price"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -80,6 +91,9 @@ X_train_scaled = scaler.fit_transform(X_train)
 
 # Transform test data using the same scaler
 X_test_scaled = scaler.transform(X_test)
+
+'''MODEL_DIR = Path("src") / "saved_models"
+joblib.dump(scaler, MODEL_DIR / "AllFeature_scaler.joblib")'''
 
 # --- Train ExtraTreesRegressor Model --- 
 extra_model = ExtraTreesRegressor(
@@ -178,7 +192,7 @@ print(n_summary)
 print("Best max_depth:", best_n)
 print("Best R²:", best_r2)'''
 
-# --- Actual vs Predicted Plot with R² reference line ---
+'''# --- Actual vs Predicted Plot with R² reference line ---
 plt.figure(figsize=(8, 8))
 
 plt.scatter(y_test, y_pred, alpha=0.4, s=15, color="royalblue", label="Predicted vs Actual")
@@ -194,4 +208,4 @@ plt.title(f"Actual vs Predicted Price")
 plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
-plt.savefig("FullFeature_actual_vs_predicted.png", dpi=300)
+plt.savefig("FullFeature_actual_vs_predicted.png", dpi=300)'''
