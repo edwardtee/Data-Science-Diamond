@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 # preprocess.py lives at <project>/src/preprocessing/preprocess.py
 # parents[0]=preprocessing, [1]=src, [2]=<project root>
