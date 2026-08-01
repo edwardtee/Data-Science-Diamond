@@ -1,8 +1,8 @@
 {
   "Extra Tree Regression": {
-    "r2": 0.8575,
-    "mae": 726.60,
-    "rmse": 1297.28
+    "r2": 0.8603,
+    "mae": 715.52,
+    "rmse": 1274.60
   },
   "Gradient Boosting Regression (Pro)": {
     "r2": 0.8604,
