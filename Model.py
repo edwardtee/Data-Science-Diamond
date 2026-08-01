@@ -10,8 +10,16 @@ from sklearn.ensemble import ExtraTreesRegressor
 import joblib
 import seaborn as sns
 import time
+import pandas as pd
+import os
 
-data = pd.read_csv("D:/Data Science Diamond/Diamonds Prices2022.csv")
+file_path = os.path.join(
+    os.path.dirname(__file__),
+    "Diamonds Prices2022.csv"
+)
+
+data = pd.read_csv(file_path)
+#data = pd.read_csv("D:/Data Science Diamond/Diamonds Prices2022.csv")
 df1 = data.copy()
 #not empty value
 '''print(df1.info())
