@@ -52,11 +52,12 @@ def load_full_split():
     df_clean = remove_outliers_iqr(df, OUTLIER_COLS)
     print("Cleaned shape (after outlier removal):", df_clean.shape)
 
-    encoder = LabelEncoder()
-    for col in ["cut", "color", "clarity"]:
-        df_clean[col] = encoder.fit_transform(df_clean[col])
-    
-    X = df_clean.drop(columns=["price"])
+    X = pd.get_dummies(
+        df_clean.drop(columns=["price"]),
+        columns=["cut", "color", "clarity"],
+        dtype=int,
+        drop_first=True
+    )
     y = df_clean[TARGET]
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, shuffle=True
