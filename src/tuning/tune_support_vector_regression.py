@@ -96,6 +96,7 @@ plot_tuning(C_df["C"], C_df["R2"], C_df["fit_time(s)"], "C (log scale)", "C Tuni
 best_C_row = C_df.loc[C_df["R2"].idxmax()]
 BEST_C = best_C_row["C"]
 print(f">> Best C by this scan: {BEST_C} (R2={best_C_row['R2']:.4f})\n")
+BEST_C = 100
 
 # ---------------------------------------------------------------------
 # 4. epsilon sweep (kernel=rbf, C=BEST_C from previous sweep)
