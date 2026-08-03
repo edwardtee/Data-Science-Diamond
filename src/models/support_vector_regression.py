@@ -17,9 +17,9 @@ X_train, X_test, y_train, y_test = load_test_split()
 
 FINAL_PARAMS = {
     "kernel": "rbf",
-    "C": 20000,
+    "C": 500,
     "epsilon": 5.0,
-    "gamma": 2.0
+    "gamma": "scale"
 }
 
 final_model = SVR(**FINAL_PARAMS)
