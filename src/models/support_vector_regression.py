@@ -17,7 +17,7 @@ X_train, X_test, y_train, y_test = load_test_split()
 
 FINAL_PARAMS = {
     "kernel": "rbf",
-    "C": 500,
+    "C": 1000,
     "epsilon": 5.0,
     "gamma": "scale"
 }
