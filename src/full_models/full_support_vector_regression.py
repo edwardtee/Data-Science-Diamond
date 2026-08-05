@@ -17,8 +17,8 @@ X_train, X_test, y_train, y_test = load_full_split()
 
 FINAL_PARAMS = {
     "kernel": "rbf",
-    "C": 500,
-    "epsilon": 5.0,
+    "C": 1000,
+    "epsilon": 500,
     "gamma": "scale"
 }
 

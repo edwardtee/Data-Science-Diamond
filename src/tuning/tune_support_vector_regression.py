@@ -56,54 +56,54 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 # ---------------------------------------------------------------------
 # 2. Kernel sweep
 # ---------------------------------------------------------------------
-# print("--- Kernel sweep (C=1.0, epsilon=0.1, gamma='scale') ---")
-# kernels = ["linear", "rbf", "poly", "sigmoid"]
-# kernel_rows = []
-# for k in kernels:
-#     model = SVR(kernel=k, C=1.0, epsilon=0.1, gamma="scale")
-#     r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
-#     kernel_rows.append((k, r2, mae, rmse, ft))
-#     print(f"kernel={k:8s}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
+print("--- Kernel sweep (C=1.0, epsilon=0.1, gamma='scale') ---")
+kernels = ["linear", "rbf", "poly", "sigmoid"]
+kernel_rows = []
+for k in kernels:
+    model = SVR(kernel=k, C=1.0, epsilon=0.1, gamma="scale")
+    r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
+    kernel_rows.append((k, r2, mae, rmse, ft))
+    print(f"kernel={k:8s}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
-# kernel_df = pd.DataFrame(kernel_rows, columns=["kernel", "R2", "MAE", "RMSE", "fit_time(s)"])
-# kernel_df.to_csv(OUT_DIR / "svr_kernel.csv", index=False)
-# plot_tuning(kernel_df["kernel"], kernel_df["R2"], kernel_df["fit_time(s)"], "Kernel", "Kernel Tuning: R² and Fit Time", OUT_DIR / "svr_kernel.png")
+kernel_df = pd.DataFrame(kernel_rows, columns=["kernel", "R2", "MAE", "RMSE", "fit_time(s)"])
+kernel_df.to_csv(OUT_DIR / "svr_kernel.csv", index=False)
+plot_tuning(kernel_df["kernel"], kernel_df["R2"], kernel_df["fit_time(s)"], "Kernel", "Kernel Tuning: R² and Fit Time", OUT_DIR / "svr_kernel.png")
 
-# best_kernel_row = kernel_df.loc[kernel_df["R2"].idxmax()]
-# print(f">> Best kernel by this scan: {best_kernel_row['kernel']} (R2={best_kernel_row['R2']:.4f})")
-# print(">> CAUTION: this scan used un-tuned C=1.0/gamma='scale' for every kernel.")
-# print(">> rbf looks weak here only because it hasn't been tuned yet - the C/gamma")
-# print(">> sweeps below tune rbf properly and it ends up beating this 'best' kernel.")
-# print(">> Proceeding with kernel='rbf' for the C/epsilon/gamma sweeps since it is the")
-# print(">> standard choice for capturing non-linear feature-price relationships.\n")
+best_kernel_row = kernel_df.loc[kernel_df["R2"].idxmax()]
+print(f">> Best kernel by this scan: {best_kernel_row['kernel']} (R2={best_kernel_row['R2']:.4f})")
+print(">> CAUTION: this scan used un-tuned C=1.0/gamma='scale' for every kernel.")
+print(">> rbf looks weak here only because it hasn't been tuned yet - the C/gamma")
+print(">> sweeps below tune rbf properly and it ends up beating this 'best' kernel.")
+print(">> Proceeding with kernel='rbf' for the C/epsilon/gamma sweeps since it is the")
+print(">> standard choice for capturing non-linear feature-price relationships.\n")
 
 
 # ---------------------------------------------------------------------
 # 3. C sweep (kernel=rbf)
 # ---------------------------------------------------------------------
-# print("\n--- C sweep (kernel=rbf, epsilon=0.1, gamma='scale') ---")
-# C_values = [0.1, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 20000]
-# C_rows = []
-# for C in C_values:
-#     model = SVR(kernel="rbf", C=C, epsilon=0.1, gamma="scale")
-#     r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
-#     C_rows.append((C, r2, mae, rmse, ft))
-#     print(f"C={C:7}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
+print("\n--- C sweep (kernel=rbf, epsilon=0.1, gamma='scale') ---")
+C_values = [0.1, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 20000]
+C_rows = []
+for C in C_values:
+    model = SVR(kernel="rbf", C=C, epsilon=0.1, gamma="scale")
+    r2, mae, rmse, ft = evaluate(model, X_train, y_train, X_test, y_test)
+    C_rows.append((C, r2, mae, rmse, ft))
+    print(f"C={C:7}: R2={r2:.4f}  MAE={mae:8.2f}  RMSE={rmse:8.2f}  fit_time={ft:.2f}s")
 
-# C_df = pd.DataFrame(C_rows, columns=["C", "R2", "MAE", "RMSE", "fit_time(s)"])
-# C_df.to_csv(OUT_DIR / "svr_C.csv", index=False)
-# plot_tuning(C_df["C"], C_df["R2"], C_df["fit_time(s)"], "C (log scale)", "C Tuning: R² and Fit Time", OUT_DIR / "svr_C.png", log_x=True)
+C_df = pd.DataFrame(C_rows, columns=["C", "R2", "MAE", "RMSE", "fit_time(s)"])
+C_df.to_csv(OUT_DIR / "svr_C.csv", index=False)
+plot_tuning(C_df["C"], C_df["R2"], C_df["fit_time(s)"], "C (log scale)", "C Tuning: R² and Fit Time", OUT_DIR / "svr_C.png", log_x=True)
 
-# best_C_row = C_df.loc[C_df["R2"].idxmax()]
-# BEST_C = best_C_row["C"]
-# print(f">> Best C by this scan: {BEST_C} (R2={best_C_row['R2']:.4f})\n")
-BEST_C = 100
+best_C_row = C_df.loc[C_df["R2"].idxmax()]
+BEST_C = best_C_row["C"]
+print(f">> Best C by this scan: {BEST_C} (R2={best_C_row['R2']:.4f})\n")
+BEST_C = 1000
 
 # ---------------------------------------------------------------------
 # 4. epsilon sweep (kernel=rbf, C=BEST_C from previous sweep)
 # ---------------------------------------------------------------------
 print(f"\n--- epsilon sweep (kernel=rbf, C={BEST_C}, gamma='scale') ---")
-eps_values = [0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 2, 5]
+eps_values = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600]
 eps_rows = []
 for eps in eps_values:
     model = SVR(kernel="rbf", C=BEST_C, epsilon=eps, gamma="scale")
@@ -120,6 +120,7 @@ BEST_EPS = best_eps_row["epsilon"]
 print(f">> Best epsilon by this scan: {BEST_EPS} (R2={best_eps_row['R2']:.4f})")
 print(">> Note: R2 is likely to be near-flat across epsilon values at this price scale -")
 print(">> if so, treat this as a null result rather than a strong finding in your report.\n")
+BEST_EPS = 500
 
 # ---------------------------------------------------------------------
 # 5. gamma sweep (kernel=rbf, C=BEST_C, epsilon=BEST_EPS)
