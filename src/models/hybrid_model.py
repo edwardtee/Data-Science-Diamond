@@ -1,92 +1,29 @@
+import sys
 import time
+from pathlib import Path
 
-import joblib
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
-import streamlit as st
 from sklearn.ensemble import (
     ExtraTreesRegressor,
     GradientBoostingRegressor,
     StackingRegressor,
 )
-from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
     mean_absolute_error,
     mean_squared_error,
-    precision_score,
     r2_score,
-    recall_score,
 )
-from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import SVR
 
-data = pd.read_csv("D:/Data Science Diamond/Diamonds Prices2022.csv")
-df1 = data.copy()
-#not empty value
-'''print(df1.info())
-print(df1.describe())   '''
-df1 = df1.drop(columns='Unnamed: 0')
-#print(df1.isnull().sum())
+# Navigate up 2 levels from testing.py to find the project root directory
+root_dir = Path(__file__).resolve().parents[2]
+if str(root_dir) not in sys.path:
+    sys.path.append(str(root_dir))
 
-encoder = LabelEncoder()
+from src.preprocessing.preprocessing import load_test_split
 
-for col in ["cut","color","clarity"]:
-    df1[col] = encoder.fit_transform(df1[col])
-
-'''#Generate the Correlation Matrix Image
-plt.figure(figsize=(10,8))
-
-sns.heatmap(df1.corr()>0.7,
-            annot=True,
-            cmap="coolwarm")
-
-plt.savefig('0.7correlation.png', dpi = 300) '''
-
-important_features = ["carat", "x","y","z"]
-numeric_features = [
-    "carat","depth","table","x","y","z"
-]
-df_clean = df1.copy()
-
-for col in numeric_features:
-
-    Q1 = df_clean[col].quantile(0.25)
-    Q3 = df_clean[col].quantile(0.75)
-
-    IQR = Q3 - Q1
-
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
-
-    outliers = df_clean[(df_clean[col] < lower) |
-                        (df_clean[col] > upper)]
-
-    print(col, len(outliers))
-
-    df_clean = df_clean[
-        (df_clean[col] >= lower) &
-        (df_clean[col] <= upper)
-    ]
-
-#X = df_clean.drop(columns=["price"])
-X = df_clean[important_features].copy()
-y = df_clean["price"]
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-# Standardize numerical features
-scaler = StandardScaler()
-
-# Fit on training data and transform
-X_train_scaled = scaler.fit_transform(X_train)
-
-# Transform test data using the same scaler
-X_test_scaled = scaler.transform(X_test)
+X_train, X_test, y_train, y_test = load_test_split()
 
 # --- Train ExtraTreesRegressor Model --- 
 base_models = [
@@ -103,14 +40,14 @@ base_models = [
         max_depth=5,
         min_samples_split=64,
         subsample=1.0,
-        loss='squared_error',
+        loss="squared_error",
         random_state=42
     )),
     ("svr",SVR(
-        kernel='rbf',
-        C=20000,
-        gamma=2,
-        epsilon=5
+        kernel="rbf",
+        C=1000,
+        gamma="scale",
+        epsilon=500
     ))
 ]
 
@@ -138,75 +75,10 @@ prediction_time = end_pred - start_pred
 
 # Print Evaluation Metrics
 r2 = r2_score(y_test, y_pred)
-
 mae = mean_absolute_error(y_test, y_pred)
-
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
 print("R² :", r2)
 print("MAE :", mae)
 print("RMSE:", rmse)
 print(f"Total Execution Time: {training_time + prediction_time:.4f} seconds")
-
-'''
-# Save for UI 
-# Save trained model
-joblib.dump(extra_model, "ExtraTreeR_model.pkl")
-
-# Save scaler
-joblib.dump(scaler, "scaler.pkl")
-
-print("Model Saved Successfully!")'''
-'''
-# Parameter Tuning for ExtraTreesRegressor
-from sklearn.metrics import make_scorer, mean_absolute_error, mean_squared_error
-
-def rmse(y_true, y_pred):
-    return np.sqrt(mean_squared_error(y_true, y_pred))
-
-def tune_parameter_table(param_name, param_values, base_model, X_train, y_train):
-    scoring = {
-        'r2': 'r2',
-        'mae': make_scorer(mean_absolute_error, greater_is_better=False),
-        'rmse': make_scorer(rmse, greater_is_better=False)
-    }
-
-    grid = GridSearchCV(
-        estimator=base_model,
-        param_grid={param_name: param_values},
-        scoring=scoring,
-        refit='r2',
-        cv=5,
-        n_jobs=-1,
-        return_train_score=False
-    )
-
-    grid.fit(X_train, y_train)
-
-    results = pd.DataFrame(grid.cv_results_)
-
-    summary = pd.DataFrame({
-        param_name: results[f'param_{param_name}'].astype(str),
-        'R²': results['mean_test_r2'],
-        'MAE': -results['mean_test_mae'],
-        'RMSE': -results['mean_test_rmse'],
-        'Execution Time (s)': results['mean_fit_time'] + results['mean_score_time']
-    })
-
-    summary = summary.sort_values(by='R²', ascending=False).reset_index(drop=True)
-
-    return summary, grid.best_params_[param_name], grid.best_score_
-
-model = ExtraTreesRegressor(random_state=42, n_estimators=400)
-
-n_summary, best_n, best_r2 = tune_parameter_table(
-    "max_depth",
-    [None,10,20,30,40,50,60,70],
-    model,
-    X_train_scaled,
-    y_train
-)
-
-print(n_summary)
-print("Best max_depth:", best_n)
-print("Best R²:", best_r2)'''
