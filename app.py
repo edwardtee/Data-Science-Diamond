@@ -11,7 +11,7 @@ import streamlit as st
 # Adjust MODEL_DIR if your saved_models folder lives elsewhere
 # relative to wherever you run `streamlit run app.py` from.
 MODEL_DIR = Path("src/saved_models")
-SCALER_PATH = MODEL_DIR / "FourFeature_scaler.joblib"
+SCALER_PATH = MODEL_DIR / "four_feature_scaler.joblib"
 METRICS_PATH = MODEL_DIR / "metrics.json"
 
 # ============================================================
