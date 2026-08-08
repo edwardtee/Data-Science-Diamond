@@ -1,20 +1,30 @@
+import time
+
+import joblib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import streamlit as st
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, r2_score, mean_absolute_error, mean_squared_error
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.ensemble import ExtraTreesRegressor
-from sklearn.ensemble import StackingRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
-from sklearn.svm import SVR
-import joblib
 import seaborn as sns
-import time
+import streamlit as st
+from sklearn.ensemble import (
+    ExtraTreesRegressor,
+    GradientBoostingRegressor,
+    StackingRegressor,
+)
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    mean_absolute_error,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+)
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.svm import SVR
 
 data = pd.read_csv("D:/Data Science Diamond/Diamonds Prices2022.csv")
 df1 = data.copy()

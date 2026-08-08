@@ -1,19 +1,26 @@
+import os
+import time
 from pathlib import Path
 
+import joblib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import streamlit as st
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, r2_score, mean_absolute_error, mean_squared_error
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.ensemble import ExtraTreesRegressor
-import joblib
 import seaborn as sns
-import time
-import pandas as pd
-import os
+import streamlit as st
+from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    mean_absolute_error,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+)
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 file_path = os.path.join(
     os.path.dirname(__file__),
