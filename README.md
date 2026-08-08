@@ -12,18 +12,11 @@ A machine learning project that predicts diamond prices from a handful of physic
 | Gradient Boosting Regression | `gradient_boosting_regression.py` | `gbr_model.joblib` |
 | Hybrid (Stacked: ETR + GBR + SVR → Linear) | `hybrid_model.py` | not saved (see notes) |
 
-Each `tune_*.py` script sweeps hyperparameters for its model, prints results, and
-saves CSVs + PNG charts to `output/`. The `FINAL_PARAMS` in each training script
-reflect the best values found during tuning.
+Each `tune_*.py` script sweeps hyperparameters for its model, prints results, and saves CSVs + PNG charts to `output/`. The `FINAL_PARAMS` in each training script reflect the best values found during tuning.
 
 ## Project structure
 
-This is the layout the code expects. The exact folder names for the training/tuning
-scripts (`models/`, `tuning/`) aren't fixed by anything in the code — but they **do**
-need to sit exactly two folders below the project root, since every script finds the
-root with `Path(__file__).resolve().parents[2]`. If you place a script one level
-shallower or deeper, the root-finding (and therefore the `data/` and `src/` imports)
-will break.
+This is the layout the code expects. The exact folder names for the training/tuning scripts (`models/`, `tuning/`) aren't fixed by anything in the code — but they **do** need to sit exactly two folders below the project root, since every script finds the root with `Path(__file__).resolve().parents[2]`. If you place a script one level shallower or deeper, the root-finding (and therefore the `data/` and `src/` imports) will break.
 
 ```
 project-root/
@@ -38,18 +31,28 @@ project-root/
 ├── src/
 │   ├── preprocessing/
 │   │   └── preprocessing.py        # shared load_test_split() / load_full_split()
-│   ├── models/                     # <- name can differ, must be 2 levels below root
+│   ├── models/                     # models with feature selection
 │   │   ├── linear_regression.py
 │   │   ├── support_vector_regression.py
 │   │   ├── extra_trees_regression.py
 │   │   ├── gradient_boosting_regression.py
 │   │   └── hybrid_model.py
-│   ├── tuning/                     # <- name can differ, must be 2 levels below root
+│   ├── full_models/                # models without feature selection
+│   │   ├── full_linear_regression.py
+│   │   ├── full_support_vector_regression.py
+│   │   ├── full_extra_trees_regression.py
+│   │   └── full_gradient_boosting_regression.py
+│   ├── tuning/                     # tuning files to find best hyperparameters
 │   │   ├── tune_linear_regression.py
 │   │   ├── tune_support_vector_regression.py
 │   │   ├── tune_extra_tree_regression.py
 │   │   └── tune_gradient_boosting_regression.py
 │   └── saved_models/               # auto-created — holds .joblib files + metrics.json
+│       ├── lr_model.joblib
+│       ├── svr_model.joblib
+│       ├── etr_model.joblib
+│       ├── gbr_model.joblib
+│       └── metrics.json
 └── README.md
 ```
 
@@ -59,18 +62,6 @@ Python 3.9+ is recommended. Install the packages used across the project:
 
 ```bash
 pip install streamlit pandas numpy scikit-learn joblib matplotlib seaborn
-```
-
-Or drop this into a `requirements.txt`:
-
-```
-streamlit
-pandas
-numpy
-scikit-learn
-joblib
-matplotlib
-seaborn
 ```
 
 ## Setup
@@ -101,26 +92,6 @@ python src/tuning/tune_linear_regression.py
 
 Tuning scripts run sweeps over one hyperparameter at a time, save a CSV + PNG
 chart per sweep to `output/<model_name>/`, and print the best value found.
-
-## ⚠️ Before running the app — two gaps to fix first
-
-Two things the Streamlit app expects aren't currently produced by any script:
-
-1. **The scaler isn't saved.** `preprocessing.py` fits a `StandardScaler` inside
-   `load_test_split()`, but that scaler is never written to disk. `app.py` looks
-   for it at `src/saved_models/four_feature_scaler.joblib`. Add a couple of lines
-   after training (or a small standalone script) to fit and `joblib.dump()` the
-   scaler to that path — the app can't transform inputs without it.
-2. **`metrics.json` isn't generated.** The "Model Performance" panel in the app
-   reads `src/saved_models/metrics.json` (format: `{"ETR": {"r2":..., "mae":...,
-   "rmse":..., "fit_time":...}, ...}`). The app handles its absence gracefully
-   (just shows an info message), but if you want the panel populated, add a step
-   to each training script (or a shared script) that writes these values out.
-
-Also worth a look: `tune_extra_tree_regression.py` imports `load_split` from
-`preprocessing.py`, but that function doesn't exist there (only `load_test_split`
-and `load_full_split` are defined) — this will raise an `ImportError` until it's
-changed to `load_test_split`.
 
 ## Running the Streamlit app
 
