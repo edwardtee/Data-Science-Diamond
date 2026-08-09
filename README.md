@@ -33,8 +33,6 @@ Each `tune_*.py` script sweeps hyperparameters for its model, prints results, an
 
 ## Project structure
 
-This is the layout the code expects. The exact folder names for the training/tuning scripts (`models/`, `tuning/`) aren't fixed by anything in the code — but they **do** need to sit exactly two folders below the project root, since every script finds the root with `Path(__file__).resolve().parents[2]`. If you place a script one level shallower or deeper, the root-finding (and therefore the `data/` and `src/` imports) will break.
-
 ```
 project-root/
 ├── app.py                          # Streamlit app — run from here
