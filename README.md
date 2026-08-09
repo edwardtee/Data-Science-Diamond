@@ -1,6 +1,6 @@
 # 💎 Diamond Price Prediction
 
-A machine learning project that predicts diamond prices from a handful of physical measurements (carat, length, width, depth). It trains and compares four regression models — Linear Regression, Support Vector Regression, Extra Trees, and Gradient Boosting — plus a stacked hybrid model, and serves live predictions through a Streamlit app.
+A machine learning project that predicts diamond prices from a handful of physical measurements (carat, length, width, depth). It trains and compares four regression models — Linear Regression, Support Vector Regression, Extra Trees, and Gradient Boosting, and serves live predictions through a Streamlit app.
 
 ## Requirements
 
