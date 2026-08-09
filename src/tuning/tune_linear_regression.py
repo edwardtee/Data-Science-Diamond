@@ -95,28 +95,17 @@ print("R2 gap (train - test):", round(r2_score(y_train, y_train_pred) - r2_score
 print("\nIntercept (beta_0):", round(linear_step.intercept_, 2))
 print("Mean training price:", round(y_train.mean(), 2))
 
-
-OUT_DIR = root_dir / "output" / "linear_regression"
-OUT_DIR.mkdir(parents=True, exist_ok=True)
-
-# Actual vs Predicted Plot
-plt.figure(figsize=(8,6))
-plt.scatter(y_test, y_test_pred, alpha=0.5)
-
-lims = [y_test.min(), y_test.max()]
-
 # To Generate graph
 OUT_DIR = root_dir / "output" / "linear_regression"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 def save(name):
     plt.tight_layout()
     plt.savefig(OUT_DIR / name, dpi=300)
+    plt.close()
 
 ridge_r2 = [r["R2_raw"] for r in results if r["Model"].startswith("Ridge")]
 lasso_r2 = [r["R2_raw"] for r in results if r["Model"].startswith("Lasso")]
 ols_r2   = results[0]["R2_raw"]
-
-tuning_results = pd.DataFrame(results).drop(columns=["R2_raw"])
 
 def plot_alpha_sweep(alphas, scores, colour, penalty, filename):
     plt.figure(figsize=(9, 5.5))
