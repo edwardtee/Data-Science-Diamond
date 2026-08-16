@@ -7,9 +7,9 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import GridSearchCV
 
 # Navigate up 2 levels from testing.py to find the project root directory
-root_dir = Path(__file__).resolve().parents[2]
-if str(root_dir) not in sys.path:
-    sys.path.append(str(root_dir))
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 from src.preprocessing.preprocessing import load_test_split
 
@@ -70,7 +70,7 @@ def plot_sweep(df, param_name, out_path, xlabel=None, logx=False):
     print("  saved", out_path)
 
 BASE = {"n_estimators": 100, "max_depth": 3, "learning_rate": 0.1, "min_samples_leaf": 1, "subsample": 1.0}
-OUT_DIR = root_dir / "output" / "gradient_boosting_regression"
+OUT_DIR = ROOT_DIR / "output" / "gradient_boosting_regression"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 print("\n--- n_estimators ---")

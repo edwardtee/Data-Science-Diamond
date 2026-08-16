@@ -5,12 +5,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # Navigate up 2 levels from testing.py to find the project root directory
-root_dir = Path(__file__).resolve().parents[2]
-if str(root_dir) not in sys.path:
-    sys.path.append(str(root_dir))
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
-METRICS_DIR = root_dir / "src" / "saved_models" / "metrics.json"
-OUT_DIR = root_dir / "output"
+METRICS_DIR = ROOT_DIR / "src" / "saved_models" / "metrics.json"
+OUT_DIR = ROOT_DIR / "output"
 
 # ---- Load data ----
 with open(METRICS_DIR, "r") as f:

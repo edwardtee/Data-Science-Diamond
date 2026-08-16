@@ -7,9 +7,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, r2_score, root_mean_squared_error
 
 # Navigate up 2 levels from testing.py to find the project root directory
-root_dir = Path(__file__).resolve().parents[2]
-if str(root_dir) not in sys.path:
-    sys.path.append(str(root_dir))
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 from src.preprocessing.preprocessing import load_full_split
 
@@ -32,7 +32,7 @@ print("R2:  ", round(r2_score(y_test, y_pred), 6))
 print("MAE: ", round(mean_absolute_error(y_test, y_pred), 6))
 print("RMSE:", round(root_mean_squared_error(y_test, y_pred), 6))
 
-OUT_DIR = root_dir / "src" / "full_models" / "scatterplots"
+OUT_DIR = ROOT_DIR / "src" / "full_models" / "scatterplots"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 plt.figure(figsize=(8, 8))

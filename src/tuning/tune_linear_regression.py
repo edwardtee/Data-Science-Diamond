@@ -12,9 +12,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 # Navigate up 2 levels from testing.py to find the project root directory
-root_dir = Path(__file__).resolve().parents[2]
-if str(root_dir) not in sys.path:
-    sys.path.append(str(root_dir))
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 from src.preprocessing.preprocessing import load_test_split
 
@@ -94,7 +94,7 @@ print("\nIntercept (beta_0):", round(linear_step.intercept_, 2))
 print("Mean training price:", round(y_train.mean(), 2))
 
 
-OUT_DIR = root_dir / "output" / "linear_regression"
+OUT_DIR = ROOT_DIR / "output" / "linear_regression"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Actual vs Predicted Plot
