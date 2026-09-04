@@ -10,6 +10,7 @@ from sklearn.linear_model import Lasso, LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from matplotlib.ticker import FormatStrFormatter
 
 # Navigate up 2 levels from testing.py to find the project root directory
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -35,6 +36,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test, model_name="Model"):
     return {
         "Model": model_name,
         "R2": round(r2, 4),
+        "R2_raw": r2,
         "MAE": round(mae, 2),
         "RMSE": round(rmse, 2),
         "Time (s)": round(exec_time, 4)
@@ -96,39 +98,86 @@ for feature, coef in zip(['carat', 'x', 'y', 'z'], linear_step.coef_):
     print(f"{feature}: {coef:.2f}")
 print("Mean training price:", round(y_train.mean(), 2))
 
-
-OUT_DIR = ROOT_DIR / "output" / "linear_regression"
+# To Generate graph
+OUT_DIR = root_dir / "output" / "linear_regression"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+def save(name):
+    plt.tight_layout()
+    plt.savefig(OUT_DIR / name, dpi=300)
+    plt.close()
 
-# Actual vs Predicted Plot
-plt.figure(figsize=(8,6))
-plt.scatter(y_test, y_test_pred, alpha=0.5)
+ridge_r2 = [r["R2_raw"] for r in results if r["Model"].startswith("Ridge")]
+lasso_r2 = [r["R2_raw"] for r in results if r["Model"].startswith("Lasso")]
+ols_r2   = results[0]["R2_raw"]
 
-lims = [y_test.min(), y_test.max()]
+def plot_alpha_sweep(alphas, scores, colour, penalty, filename):
+    plt.figure(figsize=(9, 5.5))
+    plt.plot(alphas, scores, marker="o", markersize=7,
+             color=colour, linewidth=2, label=f"{penalty} Regression",
+             zorder=3)
+    plt.axhline(y=ols_r2, color="red", linestyle="--", linewidth=2,
+                label=f"Unpenalised OLS (R² = {ols_r2:.5f})", zorder=2)
 
-# 45-degree reference: where perfect predictions would lie
-plt.plot(lims, lims, 'r--', linewidth=1.5, label='Perfect prediction (slope = 1)')
+    for a, s in zip(alphas, scores):
+        plt.annotate(f"{s:.5f}", (a, s), textcoords="offset points",
+                     xytext=(0, 11), ha="center", fontsize=8, color="#333333")
+
+    plt.xscale("log")
+    span = max(scores) - min(scores)
+    pad  = span * 0.35 if span > 0 else 0.0001
+    plt.ylim(min(scores) - pad, max(scores) + pad * 1.4)
+    plt.gca().yaxis.set_major_formatter(FormatStrFormatter("%.5f"))
+
+    plt.xticks(alphas, [str(a) for a in alphas])
+    plt.xlabel("Alpha (log scale)")
+    plt.ylabel("R² on Testing Set")
+    plt.title(f"Effect of {penalty} Alpha on Model Performance")
+    plt.legend(loc="lower left", fontsize=9)
+    plt.grid(alpha=0.3, which="both")
+    save(filename)
+
+
+plot_alpha_sweep(alphas_ridge, ridge_r2, "royalblue", "Ridge", "lr_ridge_alpha_tuning.png")
+plot_alpha_sweep(alphas_lasso, lasso_r2, "seagreen", "Lasso", "lr_lasso_alpha_tuning.png")
+
+
+plt.figure(figsize=(8, 8))
+plt.scatter(y_test, y_test_pred, alpha=0.4, s=15,
+            color="royalblue", label="Predicted vs Actual")
+lo = min(y_test.min(), y_test_pred.min())
+hi = max(y_test.max(), y_test_pred.max())
+plt.plot([lo, hi], [lo, hi], color="red", linestyle="--", linewidth=2,
+         label="Perfect Prediction (y = x)")
 plt.xlabel("Actual Price")
 plt.ylabel("Predicted Price")
 plt.title("Actual vs Predicted Diamond Price (Testing Set)")
-plt.savefig(OUT_DIR / "lr_actual_vs_predicted_test.png", dpi=150)
-plt.close()
+plt.legend()
+plt.grid(alpha=0.3)
+save("lr_actual_vs_predicted.png")
 
-# Residual Plot
+
 residuals = y_test - y_test_pred
-plt.figure(figsize=(8,6))
-plt.scatter(y_test_pred, residuals, alpha=0.5)
-plt.axhline(y=0, color='r', linestyle='--')
+plt.figure(figsize=(8, 6))
+plt.scatter(y_test_pred, residuals, alpha=0.4, s=15,
+            color="royalblue", label="Residuals")
+plt.axhline(y=0, color="red", linestyle="--", linewidth=2, label="Zero Error")
 plt.xlabel("Predicted Price")
 plt.ylabel("Residual")
 plt.title("Residual Plot (Testing Set)")
-plt.savefig(OUT_DIR / "lr_residual_plot.png", dpi=150)
-plt.close()
+plt.legend()
+plt.grid(alpha=0.3)
+save("lr_residual_plot.png")
 
-# Residual Distribution
-plt.figure(figsize=(8,5))
-sns.histplot(residuals, kde=True)
+
+plt.figure(figsize=(8, 5))
+sns.histplot(residuals, kde=True, color="royalblue",
+             edgecolor="none", alpha=0.6)
+plt.axvline(x=0, color="red", linestyle="--", linewidth=2, label="Zero Error")
+plt.axvline(x=residuals.mean(), color="darkorange", linewidth=2,
+            label=f"Mean = {residuals.mean():.2f}")
 plt.xlabel("Residual")
+plt.ylabel("Count")
 plt.title("Residual Distribution")
-plt.savefig(OUT_DIR / "lr_residual_distribution.png", dpi=150)
-plt.close()
+plt.legend()
+plt.grid(alpha=0.3)
+save("lr_residual_distribution.png")
