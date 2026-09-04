@@ -92,7 +92,10 @@ print("\n--- Overfitting Check ---")
 print(gap.to_string(index=False))
 print("R2 gap (train - test):", round(r2_score(y_train, y_train_pred) - r2_score(y_test, y_test_pred), 4))
 
-print("\nIntercept (beta_0):", round(linear_step.intercept_, 2))
+print("\n--- Linear Regression Equation ---")
+print("Intercept (beta_0):", round(linear_step.intercept_, 2))
+for feature, coef in zip(['carat', 'x', 'y', 'z'], linear_step.coef_):
+    print(f"{feature}: {coef:.2f}")
 print("Mean training price:", round(y_train.mean(), 2))
 
 # To Generate graph
