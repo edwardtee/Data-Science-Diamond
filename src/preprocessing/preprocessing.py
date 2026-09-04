@@ -7,8 +7,8 @@ from sklearn.preprocessing import StandardScaler
 
 # preprocess.py lives at <project>/src/preprocessing/preprocess.py
 # parents[0]=preprocessing, [1]=src, [2]=<project root>
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-RAW_CSV = PROJECT_ROOT / "data" / "Diamonds Prices2022.csv"
+ROOT_DIR = Path(__file__).resolve().parents[2]
+RAW_CSV = ROOT_DIR / "data" / "Diamonds Prices2022.csv"
 
 FEATURES = ["carat", "x", "y", "z"]
 TARGET = "price"

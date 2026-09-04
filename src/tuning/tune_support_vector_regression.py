@@ -9,9 +9,9 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.svm import SVR
 
 # Navigate up 2 levels from testing.py to find the project root directory
-root_dir = Path(__file__).resolve().parents[2]
-if str(root_dir) not in sys.path:
-    sys.path.append(str(root_dir))
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 from src.preprocessing.preprocessing import load_test_split
 
@@ -50,7 +50,7 @@ def plot_tuning(x_values, r2_values, time_values, xlabel, title, filename, log_x
     plt.close()
     print(f"Saved graph -> {filename}")
 
-OUT_DIR = root_dir / "output" / "support_vector_regression"
+OUT_DIR = ROOT_DIR / "output" / "support_vector_regression"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------
